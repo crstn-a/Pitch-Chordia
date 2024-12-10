@@ -27,29 +27,34 @@ else {
 
 switch ($_SERVER['REQUEST_METHOD']) {
     case "GET":
-        switch ($request[0]) {
-            case 'user': //endpoint for user 
-                if (count ($request) > 1) {
-                    echo json_encode($get->getUser($request[1]));
-                }
-                else {
-                    echo json_encode($get->getUser());
-                }
-                break;
-
-            case 'song':
-                if (count ($request) > 1) {
-                    echo json_encode($get->getSong($request[1]));
-                }
-                else {
-                    echo json_encode($get->getSong());
-                }
-                break;
-            
-            default:
-                http_response_code(401);
-                echo "This is invalid endpoint";
-                break;
+        if ($authentication->isAuthorized()){
+            switch ($request[0]) {
+                case 'user': //endpoint for user 
+                    if (count ($request) > 1) {
+                        echo json_encode($get->getUser($request[1]));
+                    }
+                    else {
+                        echo json_encode($get->getUser());
+                    }
+                    break;
+    
+                case 'song':
+                    if (count ($request) > 1) {
+                        echo json_encode($get->getSong($request[1]));
+                    }
+                    else {
+                        echo json_encode($get->getSong());
+                    }
+                    break;
+                
+                default:
+                    http_response_code(401);
+                    echo "This is invalid endpoint";
+                    break;
+            }
+        }
+        else {
+            echo "Unauthorized User";
         }
 
         break;
@@ -90,8 +95,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
                         echo json_encode($patch->patchUser($body, $request[1])); //$request[1] - endpoint slash the user_id value that you want to update
                     break;
 
+                    $file = $_FILES;
                     case "song":
-                        echo json_encode($patch->patchSong($body, $_FILES, $request[1]));
+                        echo json_encode($patch->patchSong($body, $request[1]));
                     break;
                 }
             break;
@@ -104,10 +110,18 @@ switch ($_SERVER['REQUEST_METHOD']) {
                         break;
                     }
 
+                    $file = $_FILES;
+                    case "song":
+                        echo json_encode($patch->archiveSong($request[1]));
+                        break;
+            break;
+
             default:
                 http_response_code(400);
                 echo "Invalid Request Method.";
             break;
-}
+                
+        }
+
 
 ?>

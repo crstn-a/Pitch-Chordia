@@ -54,7 +54,7 @@ class Post {
                 $uploadFilePath = $uploadDir . $fileName;
     
                 if (move_uploaded_file($file['file']['tmp_name'], $uploadFilePath)) {
-                    // Prepare values for insertion
+                    // values for insertion
                     $values = [ 
                         $body['title'], 
                         $body['artist'], 
@@ -65,8 +65,8 @@ class Post {
                     ];
     
                     // SQL query to insert the song
-                    $sqlString = "INSERT INTO songs (title, artist, lyrics, chords, mp3_path, duration) 
-                                  VALUES (?, ?, ?, ?, ?, ?)";
+                    $sqlString = "INSERT INTO songs (title, artist, lyrics, chords, mp3_path, duration, isdeleted) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?)";
                     $sql = $this->pdo->prepare($sqlString);
                     $sql->execute($values);
     

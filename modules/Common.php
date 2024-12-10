@@ -2,6 +2,7 @@
 
     class CommonMethods {
 
+
         protected function getData($tableName, $condition, \PDO $pdo){
             $sqlString = "SELECT * FROM $tableName WHERE $condition";
        
