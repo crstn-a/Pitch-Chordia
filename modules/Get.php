@@ -1,5 +1,8 @@
 <?php
-    class Get {
+
+    include_once "Common.php";
+
+    class Get extends CommonMethods {
 
         protected $pdo;
 
@@ -10,100 +13,28 @@
 
         //retrieved user data on database
         public function getUser($user_id = null) {
-            $sqlString = "SELECT * FROM users WHERE isdeleted = 0";
+            $condition = "isdeleted = 0";
             if ($user_id != null) {
-                $sqlString .= " AND user_id=" . $user_id;
+                $condition .= " AND song_id = $user_id";
             }
-
-            $data = array ();
-            $errmsg = "";
-            $code = 0;
-
-            try {
-                if ($result = $this->pdo->query($sqlString)->fetchAll()){
-                    foreach($result as $record){
-                        array_push($data, $record);
-                    }
-                    $result = null;
-                    $code = 200;
-                    return array("code"=>$code, "data"=>$data);
-                }
-                else {
-                    $errmsg = "No data found";
-                    $code = 404;
-                }
+            $result = $this->getData("users", $condition, $this->pdo);
+            if ($result['code'] == 200) {
+                return $this->sendResponse($result['data'], "Successfully retrieved records.", "Success", $result['code']);
             }
-            catch (\PDOException $e){
-                $errmsg = $e->getMessage();
-                $code = 403;
-            }
-            return array("code"=>$code, "errmsg"=>$errmsg);
-        }
-
-        //retrieved user playlist on database
-        public function getPlaylist($playlist_id = null) {
-            $sqlString = "SELECT * FROM playlists";
-            if ($playlist_id != null) {
-                $sqlString .= " WHERE playlist_id=" . $playlist_id;
-            }
-
-            $data = array ();
-            $errmsg = "";
-            $code = 0;
-
-            try {
-                if ($result = $this->pdo->query($sqlString)->fetchAll()){
-                    foreach($result as $record){
-                        array_push($data, $record);
-                    }
-                    $result = null;
-                    $code = 200;
-                    return array("code"=>$code, "data"=>$data);
-                }
-                else {
-                    $errmsg = "No data found";
-                    $code = 404;
-                }
-            }
-            catch (\PDOException $e){
-                $errmsg = $e->getMessage();
-                $code = 403;
-            }
-            return array("code"=>$code, "errmsg"=>$errmsg);
+            return $this->sendResponse(null, "Failed retrieved records", "Failed", $result['code']);
         }
 
         //retrieved user song on database
         public function getSong($song_id = null) {
-            $sqlString = "SELECT * FROM songs";
-            if ($song_id != null) {
-                $sqlString .= " WHERE song_id=" . $song_id;
+            $condition = "isdeleted = 0";
+            if($song_id != null) {
+                $condition .= " AND song_id = $song_id";
             }
-
-            $data = array ();
-            $errmsg = "";
-            $code = 0;
-
-            try {
-                if ($result = $this->pdo->query($sqlString)->fetchAll()){
-                    foreach($result as $record){
-                        array_push($data, $record);
-                    }
-                    $result = null;
-                    $code = 200;
-                    return array("code"=>$code, "data"=>$data);
-                }
-                else {
-                    $errmsg = "No data found";
-                    $code = 404;
-                }
+            $result = $this->getData("songs", $condition, $this->pdo);
+            if ($result['code'] == 200) {
+                return $this->sendResponse($result['data'], "Successfully retrieved records.", "Success", $result['code']);
             }
-            catch (\PDOException $e){
-                $errmsg = $e->getMessage();
-                $code = 403;
-            }
-            return array("code"=>$code, "errmsg"=>$errmsg);
-        }
-
+            return $this->sendResponse(null, "Failed retrieved records", "Failed", $result['code']);
+        } 
     }
-
 ?>
