@@ -54,7 +54,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
             }
         }
         else {
-            echo "Unauthorized User";
+            echo "Unauthorized User.";
         }
 
         break;
@@ -78,6 +78,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
                     case 'create-playlist':
                         echo json_encode($post->postUserPlaylist($body));
+                        break;
+
+                    case 'add-song-to-playlist':
+                        $bodyArray = json_decode(json_encode($body), true);
+                        echo json_encode($post->addSongToPlaylist($bodyArray));
                         break;
                     
                     default:

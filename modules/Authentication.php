@@ -37,7 +37,7 @@ class Authentication {
             "alg"=>"HS256",
             "typ" => "JWT",
             "app" => "pitch-chordia",
-            "dev" => "Cristina Alipio,"
+            "dev" => "Team Alira"
         ];
         return base64_encode(json_encode($header));
     }
@@ -48,8 +48,7 @@ class Authentication {
         $payload = [
             "account_id" => $account_id,
             "username" => $username,
-            "by" => "Cristina Alipio",
-            "email" => "202311208@gordoncollege.edu.ph",
+            "email" => "user@example.com",
             "date" => date_create(),
             "expiration" => date("Y-m_d H:i:s")
         ];

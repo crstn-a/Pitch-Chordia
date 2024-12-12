@@ -31,7 +31,7 @@
             session_start();
         
             if (!isset($_SESSION['username'])) {
-                return array("errmsg" => "You must log in to view your playlists", "code" => 401);  // Error if not logged in
+                return array("errmsg" => "You must log in to view your playlists", "code" => 401); // Error if not logged in
             }
         
             $username = $_SESSION['username'];
@@ -42,34 +42,73 @@
             $sql->execute([$username]);
         
             if ($sql->rowCount() > 0) {
-                $user = $sql->fetch();
+                $user = $sql->fetch(PDO::FETCH_ASSOC);
                 $user_id = $user['user_id'];
             } else {
-                return array("errmsg" => "User not found", "code" => 404); 
+                return array("errmsg" => "User not found", "code" => 404);
             }
         
             try {
-                $sqlString = "SELECT playlist_name FROM userplaylist WHERE user_id = ?";
+                // Fetch playlists and their songs
+                $sqlString = "
+                    SELECT 
+                        up.playlist_id, 
+                        up.playlist_name, 
+                        s.song_id, 
+                        s.title AS song_title, 
+                        s.artist, 
+                        s.chord_lyrics, 
+                        s.mp3_path, 
+                        s.duration
+                    FROM 
+                        userplaylist up
+                    LEFT JOIN 
+                        song_playlist sp ON up.playlist_id = sp.playlist_id
+                    LEFT JOIN 
+                        songs s ON sp.song_id = s.song_id
+                    WHERE 
+                        up.user_id = ?";
                 $sql = $this->pdo->prepare($sqlString);
                 $sql->execute([$user_id]);
         
                 if ($sql->rowCount() > 0) {
-                    $playlists = $sql->fetchAll(PDO::FETCH_ASSOC); 
+                    $rows = $sql->fetchAll(PDO::FETCH_ASSOC);
+        
+                    // Group songs by playlist
+                    foreach ($rows as $row) {
+                        $playlist_id = $row['playlist_id'];
+                        if (!isset($playlists[$playlist_id])) {
+                            $playlists[$playlist_id] = [
+                                'playlist_name' => $row['playlist_name'],
+                                'songs' => []
+                            ];
+                        }
+                        if (!empty($row['song_id'])) { // If a song exists in the playlist
+                            $playlists[$playlist_id]['songs'][] = [
+                                'song_id' => $row['song_id'],
+                                'song_title' => $row['song_title'],
+                                'artist' => $row['artist'],
+                                'chord_lyrics' => $row['chord_lyrics'],
+                                'mp3_path' => $row['mp3_path'],
+                                'duration' => $row['duration']
+                            ];
+                        }
+                    }
+        
                     $code = 200;
                 } else {
                     $errmsg = "No playlists found for this user";
                     $code = 404;
                 }
         
-                return array("data" => $playlists, "errmsg" => $errmsg, "code" => $code);
+                return array("data" => array_values($playlists), "errmsg" => $errmsg, "code" => $code);
         
             } catch (\PDOException $e) {
                 $errmsg = $e->getMessage();
                 $code = 400;
-                return array("errmsg" => $errmsg, "code" => $code); 
+                return array("errmsg" => $errmsg, "code" => $code);
             }
         }
-        
 
     }
 ?>
