@@ -8,33 +8,6 @@ class Post {
         $this->pdo = $pdo;
     }
 
-    //add user info into the db
-    public function postUser($body) {
-        $values = [];
-        $errmsg = "";
-        $code = 0;
-
-        foreach ($body as $value){
-            array_push($values, $value);
-        }
-
-        try{
-            $sqlString = "INSERT INTO users (firstname, lastname, email, isdeleted) VALUES (?, ?, ?, ?)";
-            $sql = $this->pdo->prepare ($sqlString);
-            $sql->execute($values);
-
-            $code = 200;
-            $data = null;
-
-            return array ("data"=>$data, "code"=>$code);
-
-        }catch(\PDOException $e){
-            $errmsg = $e->getMessage();
-            $code = 400;
-        }
-            return array("errmsg" => $errmsg, "code:"=>$code);
-    }
-
      //add song recrods into the db
      public function postSong($body, $file) {
         $values = [];
@@ -42,6 +15,12 @@ class Post {
         $code = 0;
     
         try {
+            if (isset($_POST['song'])) {
+                session_start();
+            } if (!isset($_SESSION['user_id'])) {
+                die ("You must log in first to upload a song.");
+            }
+
             // checks if the dir of uploads exist
             $uploadDir = __DIR__ . '/uploads/';
             if (!file_exists($uploadDir)) {
@@ -88,6 +67,56 @@ class Post {
         }
     
         return array("errmsg" => $errmsg, "code" => $code);
+    }
+
+    public function postUserPlaylist($body) {
+        $values = [];
+        $errmsg = "";
+        $code = 0;
+
+        session_start();
+
+        if(!isset($_SESSION['username'])){
+            die ("You must log in first to create a playlist");
+        }
+
+        $username = $_SESSION['username'];
+
+        //fetch user id from the db using username
+        $sqlString = "SELECT user_id FROM accounts WHERE username = ?";
+        $sql = $this->pdo->prepare ($sqlString);
+        $sql->execute([$username]);
+
+        //check if the user id is existing in the db
+        if($sql->rowCount() > 0) {
+            $user = $sql->fetch();
+            $user_id = $user['user_id'];
+        } 
+        else {
+            die("User not found");
+        }
+
+        foreach ($body as $value){
+            array_push($values, $value);
+        }
+
+        array_push($values, $user_id);
+
+        try{
+            $sqlString = "INSERT INTO userplaylist (playlist_name, user_id) VALUES (?, ?)";
+            $sql = $this->pdo->prepare ($sqlString);
+            $sql->execute($values);
+
+            $code = 200;
+            $data = "Playlist created successfully.";
+
+            return array ("data"=>$data, "code"=>$code);
+
+        }catch(\PDOException $e){
+            $errmsg = $e->getMessage();
+            $code = 400;
+        }
+            return array("errmsg" => $errmsg, "code:"=>$code);
     }
 
 }

@@ -30,7 +30,6 @@ class Authentication {
         return "";
     }
 
-
     ##JWT Generator
     private function generateHeader() {
         //required fields alg(orithm) and type
@@ -125,16 +124,15 @@ class Authentication {
         $message = "";
 
         try {
-            //it retrieve the record from the database 
-            $sqlString = "SELECT admin_id, username, password, token FROM accounts WHERE username = ?";
-            $stmt = $this->pdo->prepare($sqlString); //statement to prevent sql injection
+            $sqlString = "SELECT user_id, username, password, token FROM accounts WHERE username = ?";
+            $stmt = $this->pdo->prepare($sqlString); 
             $stmt->execute([$username]);
 
             //check if the record is existing or not
             if($stmt->rowCount() > 0){
-                $result = $stmt->fetchAll()[0]; //fetch the result of record of the admin
+                $result = $stmt->fetchAll()[0]; 
                 if ($this->isSamePassword($password, $result['password'])); {
-                    //return user info
+
                     $code = 200;
                     $remarks = "Success";
                     $message = "Logged in successfully";
@@ -142,10 +140,15 @@ class Authentication {
                     //generate token function, 
                     //this is where (login function) the token is happening
                     //it needs to define first before it throws in the payload.
-                    $token = $this->generateToken($result['admin_id'], $result['username']);
+                    $token = $this->generateToken($result['user_id'], $result['username']);
                     $token_arr = explode('.', $token);
                     $this->saveToken($token_arr[2], $result['username']);
-                    $payload = array("admin_id" => $result['admin_id'], "username" => $result['username'], "token"=>$token_arr[2]); //throw the data to the user or frontend
+
+                    session_start();
+                    $_SESSION['user_id'] = $result['user_id'];
+                    $_SESSION['username'] = $result['username'];
+
+                    $payload = array("user_id" => $result['user_id'], "username" => $result['username'], "token"=>$token_arr[2]); //throw the data to the user or frontend
                 }
             }
             else {
@@ -175,7 +178,7 @@ class Authentication {
         }
         
         try{
-            $sqlString = "INSERT INTO accounts (admin_id, firstname, lastname, username, password) VALUES (?,?,?,?,?)";
+            $sqlString = "INSERT INTO accounts (firstname, lastname, username, password) VALUES (?,?,?,?)";
             $sql = $this->pdo->prepare($sqlString);
             $sql->execute($values);
 
@@ -185,8 +188,7 @@ class Authentication {
             return array("data"=>$data, "code"=>$code);
         }
         catch(\PDOException $e){
-            $message = $e->getMessage();
-            $remarks = "failed";
+            $errmsg = $e->getMessage();
             $code = 400;
         }
 

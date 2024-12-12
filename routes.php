@@ -29,21 +29,21 @@ switch ($_SERVER['REQUEST_METHOD']) {
     case "GET":
         if ($authentication->isAuthorized()){
             switch ($request[0]) {
-                case 'user': //endpoint for user 
-                    if (count ($request) > 1) {
-                        echo json_encode($get->getUser($request[1]));
-                    }
-                    else {
-                        echo json_encode($get->getUser());
-                    }
-                    break;
-    
                 case 'song':
                     if (count ($request) > 1) {
                         echo json_encode($get->getSong($request[1]));
                     }
                     else {
                         echo json_encode($get->getSong());
+                    }
+                    break;
+
+                case 'playlist':
+                    if (count ($request) > 1) {
+                        echo json_encode($get->getUserPlaylist($request[1]));
+                    }
+                    else {
+                        echo json_encode($get->getUserPlaylist());
                     }
                     break;
                 
@@ -62,10 +62,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
             case "POST":
                 $body = json_decode(file_get_contents("php://input"));
                 switch ($request[0]) {
-                    case 'user': //user endpoint for our user app
-                        echo json_encode($post->postUser($body));
-                        break;
-
                     case 'register': //registration endpoint -- add account
                         echo json_encode($authentication->addAccount($body));
                     break;
@@ -79,6 +75,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
                         $file = $_FILES;
                         echo json_encode($post->postSong($body, $file));
                         break;
+
+                    case 'create-playlist':
+                        echo json_encode($post->postUserPlaylist($body));
+                        break;
                     
                     default:
                         http_response_code(401);
@@ -91,12 +91,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
             case "PATCH":
                 $body = json_decode(file_get_contents("php://input"));
                 switch($request[0]){
-                    case "user":
-                        echo json_encode($patch->patchUser($body, $request[1])); //$request[1] - endpoint slash the user_id value that you want to update
-                    break;
-
-                    $file = $_FILES;
                     case "song":
+                        $file = $_FILES;
                         echo json_encode($patch->patchSong($body, $request[1]));
                     break;
                 }
@@ -105,15 +101,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
             case "DELETE":
                 switch($request[0]){
-                    case "user":
-                        echo json_encode($patch->archiveUser($request[1]));
-                        break;
-                    }
-
-                    $file = $_FILES;
                     case "song":
+                        $file = $_FILES;
                         echo json_encode($patch->archiveSong($request[1]));
                         break;
+                    }
             break;
 
             default:
