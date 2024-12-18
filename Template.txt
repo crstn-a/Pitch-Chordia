@@ -1,0 +1,54 @@
+Pitch-Chordia template
+
+GET: song
+GET: playlist
+
+POST: register
+{
+	"firstname":
+	"lastname":
+	"username":
+	"password":
+}
+
+POST: login
+{
+	"username":
+	"password":
+}
+
+POST: song (form-data)
+{
+	"title":
+	"artist":
+	"chord_lyrics":
+	"mp3_path (file)":
+	"duration":
+	"isdeleted":
+}
+
+POST: playlist
+{
+	"playlist_name":
+}
+
+
+POST: song-playlist
+{
+	"playlist_name": 
+    	"title": 
+   	"artist": 
+}
+
+PATCH: song/1
+{
+	"title":
+	"artist":
+	"chord_lyrics":
+}
+
+PATCH: playlist/1
+{
+	"playlist_name":
+}
+
