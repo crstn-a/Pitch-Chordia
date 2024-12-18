@@ -1,6 +1,8 @@
 <?php
 
-class Post {
+include_once "Common.php";
+
+class Post extends CommonMethods {
 
     protected $pdo;
 
@@ -9,35 +11,11 @@ class Post {
     }
 
      //add song recrods into the db
-    public function postSong($body, $file) {
+    public function uploadSong($body, $file) {
         $values = [];
         $errmsg = "";
         $code = 0;
 
-        session_start();
-
-        if(!isset($_SESSION['username'])){
-            die ("You must log in first to create a playlist");
-        }
-
-        $username = $_SESSION['username'];
-
-        //fetch user id from the db using username
-        $sqlString = "SELECT user_id FROM accounts WHERE username = ?";
-        $sql = $this->pdo->prepare ($sqlString);
-        $sql->execute([$username]);
-
-        //check if the user id is existing in the db
-        if($sql->rowCount() > 0) {
-            $user = $sql->fetch();
-            $user_id = $user['user_id'];
-        } 
-        else {
-            die("User not found");
-        }
-
-        array_push($values, $user_id);
-    
         try {
             // checks if the dir of uploads exist
             $uploadDir = __DIR__ . '/uploads/';
@@ -69,9 +47,13 @@ class Post {
     
                     $code = 200;
                     $data = "Song uploaded!";
+
+                    $this->logger("Alira", "POST", "Uploaded a file song");
+
                     return array("data" => $data, "code" => $code);
                 } else {
-                    throw new \Exception("Failed to upload an mp3 file.");
+                    $this->logger("Alira", "POST", "Uploaded a file song");
+                    throw new \Exception("Failed to upload mp3 file.");
                 }
             } else {
                 throw new \Exception("No file uploaded.");
@@ -87,7 +69,7 @@ class Post {
         return array("errmsg" => $errmsg, "code" => $code);
     }
 
-    public function postUserPlaylist($body) {
+    public function createPlaylist($body) {
             $values = [];
             $errmsg = "";
             $code = 0;
@@ -104,7 +86,7 @@ class Post {
             $sqlString = "SELECT user_id FROM accounts WHERE username = ?";
             $sql = $this->pdo->prepare ($sqlString);
             $sql->execute([$username]);
-
+            
             //check if the user id is existing in the db
             if($sql->rowCount() > 0) {
                 $user = $sql->fetch();
@@ -128,12 +110,15 @@ class Post {
                 $code = 200;
                 $data = "Playlist created successfully.";
 
+                $this->logger("Alira", "POST", "Successfully created a playlist");
+
                 return array ("data"=>$data, "code"=>$code);
 
             }catch(\PDOException $e){
                 $errmsg = $e->getMessage();
                 $code = 400;
             }
+                $this->logger("Alira", "POST", "Failed to create a playlist");
                 return array("errmsg" => $errmsg, "code:"=>$code);
     }
 
@@ -161,7 +146,7 @@ class Post {
         }
     
         try {
-            // check if playlist exist
+            // check if playlist exist in the user account
             $sqlString = "SELECT playlist_id FROM userplaylist WHERE playlist_name = ? AND user_id = ?";
             $sql = $this->pdo->prepare($sqlString);
             $sql->execute([$body['playlist_name'], $user_id]);
@@ -176,7 +161,7 @@ class Post {
             // check if song exist
             $sqlString = "SELECT song_id FROM songs WHERE title = ? AND artist = ?";
             $sql = $this->pdo->prepare($sqlString);
-            $sql->execute([$body['song_title'], $body['artist']]);
+            $sql->execute([$body['title'], $body['artist']]);
     
             if ($sql->rowCount() > 0) {
                 $song = $sql->fetch();
@@ -201,12 +186,16 @@ class Post {
     
             $code = 200;
             $data = "Song added to playlist successfully.";
+
+            $this->logger("Alira", "POST", "Successfully added a song to playlist");
     
             return array("data" => $data, "code" => $code);
     
         } catch (\PDOException $e) {
             $errmsg = $e->getMessage();
             $code = 400;
+
+            $this->logger("Alira", "POST", "Failed to add a song to playlist");
             return array("errmsg" => $errmsg, "code" => $code);
         }
     }

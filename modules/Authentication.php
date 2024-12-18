@@ -18,6 +18,7 @@ class Authentication {
         $headers = array_change_key_case(getallheaders(),CASE_LOWER);
 
         $sqlString = "SELECT token FROM accounts WHERE username=?";
+
         try{
             $stmt = $this->pdo->prepare($sqlString);
             $stmt->execute([$headers['x-auth-user']]);
@@ -36,7 +37,7 @@ class Authentication {
         $header = [
             "alg"=>"HS256",
             "typ" => "JWT",
-            "app" => "pitch-chordia",
+            "app" => "Pitch Chordia",
             "dev" => "Team Alira"
         ];
         return base64_encode(json_encode($header));
@@ -50,7 +51,7 @@ class Authentication {
             "username" => $username,
             "email" => "user@example.com",
             "date" => date_create(),
-            "expiration" => date("Y-m_d H:i:s")
+            "expiration" => date("Y-m-d H:i:s")
         ];
         return base64_encode(json_encode($payload));
     }
@@ -59,11 +60,11 @@ class Authentication {
     private function generateToken($account_id, $username){
         $header = $this->generateHeader();
         $payload = $this->generatePayload($account_id, $username);
-        $signature = hash_hmac("sha256", "$header.$payload", TOKEN_KEY);
+        $signature = hash_hmac("sha256", "$header . $payload", TOKEN_KEY);
         return "$header.$payload." . base64_encode($signature);
     }
 
-    ##Admin Authentication
+    ##User Authentication
     //compare hash value that generate (input password) to the existing hash value
     private function isSamePassword ($inputPassword, $existingHash) {
         $hash = crypt($inputPassword, $existingHash);
@@ -85,7 +86,6 @@ class Authentication {
         $mb64String = str_replace("+", ".", $b64String); //the generate hash will replace the + sign into dot
         return substr($mb64String, 0, $length);
     }
-
 
     public function saveToken($token, $username){
         
@@ -112,7 +112,7 @@ class Authentication {
 
     }
 
-    //validate the admin - login
+    //validate the user - login
     public function login($body){
         $username = $body->username;
         $password = $body->password;
@@ -182,7 +182,7 @@ class Authentication {
             $sql->execute($values);
 
             $code = 200;
-            $data = null;
+            $data = "Register Account Successful";
 
             return array("data"=>$data, "code"=>$code);
         }

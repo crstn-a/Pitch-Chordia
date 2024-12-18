@@ -47,6 +47,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
                     }
                     break;
                 
+                case 'log':
+                    echo json_encode($get->getLogs($request[1] ?? date("Y-m-d")));
+                    break;
+                
                 default:
                     http_response_code(401);
                     echo "This is invalid endpoint";
@@ -59,37 +63,40 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
         break;
 
+
             case "POST":
                 $body = json_decode(file_get_contents("php://input"));
-                switch ($request[0]) {
-                    case 'register': //registration endpoint -- add account
-                        echo json_encode($authentication->addAccount($body));
-                    break;
-
-                    case 'login': //login endpoint 
-                        echo json_encode($authentication->login($body));
+                    switch ($request[0]) {
+                        case 'register': //registration endpoint -- add account
+                            echo json_encode($authentication->addAccount($body));
                         break;
     
-                    case 'song':
-                        $body = $_POST;
-                        $file = $_FILES;
-                        echo json_encode($post->postSong($body, $file));
-                        break;
-
-                    case 'create-playlist':
-                        echo json_encode($post->postUserPlaylist($body));
-                        break;
-
-                    case 'add-song-to-playlist':
-                        $bodyArray = json_decode(json_encode($body), true);
-                        echo json_encode($post->addSongToPlaylist($bodyArray));
-                        break;
-                    
-                    default:
-                        http_response_code(401);
-                        echo "This is invalid endpoint";
-                        break;
-                }
+                        case 'login': //login endpoint 
+                            echo json_encode($authentication->login($body));
+                            break;
+        
+                        case 'song':
+                            $body = $_POST;
+                            $file = $_FILES;
+                            echo json_encode($post->uploadSong($body, $file));
+                            break;
+    
+                        case 'playlist':
+                            echo json_encode($post->createPlaylist($body));
+                            break;
+    
+                        case 'song-playlist':
+                            $bodyArray = json_decode(json_encode($body), true);
+                            echo json_encode($post->addSongToPlaylist($bodyArray));
+                            break;
+                        
+                        default:
+                            http_response_code(401);
+                            echo "This is invalid endpoint";
+                            break;
+                    }
+                
+                
             break;
 
             
@@ -100,6 +107,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
                         $file = $_FILES;
                         echo json_encode($patch->patchSong($body, $request[1]));
                     break;
+
+                    case "playlist":
+                        echo json_encode($patch->patchUserPlaylist($body, $request[1]));
+                    break;
                 }
             break;
 
@@ -109,6 +120,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
                     case "song":
                         $file = $_FILES;
                         echo json_encode($patch->archiveSong($request[1]));
+                        break;
+                    
+                    case "playlist":
+                        echo json_encode($patch->archivePlaylist($request[1]));
                         break;
                     }
             break;
