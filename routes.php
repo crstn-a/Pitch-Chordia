@@ -16,7 +16,6 @@ $get= new Get ($pdo);
 $patch = new Patch($pdo);
 $authentication = new Authentication($pdo);
 
-
 //retrieved and endpoints and split
 if (isset($_REQUEST['request'])){
     $request = explode ("/", $_REQUEST['request']);
@@ -55,10 +54,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
                     http_response_code(401);
                     echo "This is invalid endpoint";
                     break;
-            }
-        }
-        else {
-            echo "Unauthorized User.";
+                }
+        } else {
+            http_response_code(401);
+            echo json_encode(["error" => "Unauthorized User"]);
         }
 
         break;
@@ -66,6 +65,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
             case "POST":
                 $body = json_decode(file_get_contents("php://input"));
+
+                    if (in_array($request[0], ["login", "register"])) {
                     switch ($request[0]) {
                         case 'register': //registration endpoint -- add account
                             echo json_encode($authentication->addAccount($body));
@@ -74,7 +75,13 @@ switch ($_SERVER['REQUEST_METHOD']) {
                         case 'login': //login endpoint 
                             echo json_encode($authentication->login($body));
                             break;
-        
+
+                        }
+                        break;
+                    }
+                
+                    if ($authentication->isAuthorized()) {
+                        switch ($request[0]) {
                         case 'song':
                             $body = $_POST;
                             $file = $_FILES;
@@ -94,9 +101,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
                             http_response_code(401);
                             echo "This is invalid endpoint";
                             break;
+                        }
+                    } else {
+                        http_response_code(401);
+                        echo json_encode(["error" => "Unauthorized User"]);
                     }
-                
-                
             break;
 
             
