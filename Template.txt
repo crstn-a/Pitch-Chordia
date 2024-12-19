@@ -1,7 +1,9 @@
-Pitch-Chordia template
+Pitch-Chordia json template using POSTMAN
 
-GET: song
-GET: playlist
+GET: song				- 	to view the song that you uploaded
+GET: playlist			-	to view the playlist that you created with the song details that you put in that playlist (filter example: http://localhost/Pitch-Chordia/playlist/1) 
+							|| if your playlist is just one word (filter example: http://localhost/Pitch-Chordia/playlist/Vibe)
+GET: log				-	to view the log files.
 
 POST: register
 {
@@ -17,38 +19,43 @@ POST: login
 	"password":
 }
 
-POST: song (form-data)
+POST: song (form-data)	-	to upload a song with their details
 {
-	"title":
-	"artist":
-	"chord_lyrics":
-	"mp3_path (file)":
-	"duration":
-	"isdeleted":
+	title				(TEXT)
+	artist				(TEXT)
+	chord_lyrics		(TEXT)
+	file 				(FILE)  		//for mp3_path
+	duration			(TEXT)
+	isdeleted			(TEXT)
 }
 
-POST: playlist
+POST: playlist			-	to create a playlist
 {
 	"playlist_name":
 }
 
 
-POST: song-playlist
+POST: song-playlist		- 	to add a song into the specific playlist (put the playlist_name where you want to input the song)
 {
 	"playlist_name": 
-    	"title": 
+    "title": 
    	"artist": 
 }
 
-PATCH: song/1
+PATCH: song/1			- 	to update the song details (only the following fields are allowed to patch)
 {
 	"title":
 	"artist":
 	"chord_lyrics":
 }
 
-PATCH: playlist/1
+PATCH: playlist/1		- 	to update the playlist_name (only the playlist_name are allowed field to patch)
 {
 	"playlist_name":
 }
 
+first GET song then view the list of songs that you uploaded (and view specifically the song_id) that you want to delete.
+ARCHIVE: song/1			-	to archive the song
+
+
+ARCHIVE: playlist/1
