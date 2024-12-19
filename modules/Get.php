@@ -49,7 +49,7 @@
         } 
 
         //retrieved user playlist on db
-        public function getUserPlaylist($playlist_id = null) {
+        public function getUserPlaylist($filter = null) {
             $errmsg = "";
             $code = 0;
             $playlists = [];
@@ -75,7 +75,7 @@
             }
         
             try {
-                // Fetch playlists and their songs
+                // Base query
                 $sqlString = "
                     SELECT 
                         up.playlist_id, 
@@ -94,15 +94,22 @@
                         songs s ON sp.song_id = s.song_id
                     WHERE 
                         up.user_id = ?";
-
-                if ($playlist_id !== null) {
-                    $sqlString .= " AND up.playlist_id = ?";
+                
+                // Adjust the query based on the filter
+                if ($filter !== null) {
+                    if (is_numeric($filter)) {
+                        // Filter by playlist ID
+                        $sqlString .= " AND up.playlist_id = ?";
+                    } else {
+                        // Filter by playlist name
+                        $sqlString .= " AND up.playlist_name = ?"; //you can filter the playlist_name if it's just one word
+                    }
                 }
-
+        
                 $sql = $this->pdo->prepare($sqlString);
-
-                if ($playlist_id !== null) {
-                    $sql->execute([$user_id, $playlist_id]);
+    
+                if ($filter !== null) {
+                    $sql->execute([$user_id, $filter]);
                 } else {
                     $sql->execute([$user_id]);
                 }
@@ -136,7 +143,7 @@
                 } else {
                     $errmsg = "No playlists found for this user";
                     $code = 404;
-                    $this->logger("Alira", "GET", "Failed to retrieved playlist");
+                    $this->logger("Alira", "GET", "Failed to retrieve playlist");
                 }
         
                 return array("data" => array_values($playlists), "errmsg" => $errmsg, "code" => $code);
@@ -147,9 +154,32 @@
                 return array("errmsg" => $errmsg, "code" => $code);
             }
         }
+        
 
         //retrieved log files
         public function getLogs($date){
+
+            session_start();
+        
+            if (!isset($_SESSION['username'])) {
+                return array("errmsg" => "You must log in to view the log files", "code" => 401); // Error if not logged in
+            }
+        
+            $username = $_SESSION['username'];
+        
+            // Fetch user_id from the database using username
+            $sqlString = "SELECT user_id FROM accounts WHERE username = ?";
+            $sql = $this->pdo->prepare($sqlString);
+            $sql->execute([$username]);
+        
+            if ($sql->rowCount() > 0) {
+                $user = $sql->fetch(PDO::FETCH_ASSOC);
+                $user_id = $user['user_id'];
+            } else {
+                return array("errmsg" => "User not found", "code" => 404);
+            }
+
+
             $filename = "./logs/" . $date . ".log";
             
             $logs = array();
