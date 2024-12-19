@@ -69,6 +69,7 @@ class Post extends CommonMethods {
         return array("errmsg" => $errmsg, "code" => $code);
     }
 
+    //create playlist
     public function createPlaylist($body) {
             $values = [];
             $errmsg = "";
@@ -122,6 +123,7 @@ class Post extends CommonMethods {
                 return array("errmsg" => $errmsg, "code:"=>$code);
     }
 
+    //add song to playlist
     public function addSongToPlaylist($body) {
         $errmsg = "";
         $code = 0;
