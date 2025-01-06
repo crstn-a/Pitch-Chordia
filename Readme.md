@@ -4,4 +4,5 @@ A RESTful API built in PHP where you can:
 - view
 - archive
 - update
-playlist and songs.
+
+playlist and songs where it has a song lyrics and guitar chords.
